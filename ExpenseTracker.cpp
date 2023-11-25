@@ -1,9 +1,10 @@
-	#include <iostream>
+#include <iostream>
 	#include <time.h>
 	#include <iomanip>
 	#include <unistd.h>
 	#include "data (2).h"
 	#include <conio.h>
+	#include <sstream>
 	#define MAX_TRANS 100
 	using namespace std;
 	
@@ -154,42 +155,7 @@
 	        return totalOutcome;
 	    }
 	
-		// print transaksi yang sudah pernah dilakukan
-	void printTransOutcome() {
-		cout<<"\tOUTCOME\n";
-    cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi" << setw(15) << "Kategori" << setw(15) << "Nominal" << endl;
-    for (int i = 0; i < currentIndex; ++i) {
-        // Pengecekan jika kategori tidak kosong dan deskripsi tidak kosong
-         if (!kategori[i].nama.empty() && !transaksi[i].deskripsi.empty()) {
-            // Outcome
-            time_t waktu = mktime(&transaksi[i].tanggal);  // Konversi struct tm ke time_t
-            tm* waktuTm = localtime(&waktu);
-            char buffer[20];
-            strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
-            if (transaksi[i].type != Income) {
-                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi << setw(15) << kategori[i].nama << setw(15) << transaksi[i].jumlah << endl;
-            } 
-        }  
-    }
-}
 
-void printTransIncome() {
-    cout << "\tINCOME\n";
-    cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi"  << setw(15) << "Nominal" << endl;
-    for (int i = 0; i < currentIndex; ++i) {
-        // Pengecekan jika kategori tidak kosong dan deskripsi tidak kosong
-        if (!transaksi[i].deskripsi.empty()) {
-            // Income
-            time_t waktu = mktime(&transaksi[i].tanggal);  // Konversi struct tm ke time_t
-            tm* waktuTm = localtime(&waktu);
-            char buffer[20];
-            strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
-            if (transaksi[i].type == Income) {
-                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi  << setw(15) << transaksi[i].jumlah << endl;
-            }
-        }
-    }
-}
 
 		void tambahKategori(const string& nama) {
      	   // Check if the category already exists
@@ -260,6 +226,74 @@ void printTransIncome() {
 
 
 
+//---------------------------------------------------
+		// print transaksi yang sudah pernah dilakukan
+	void printTransOutcome() {
+		cout<<"\tOUTCOME\n";
+    cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi" << setw(15) << "Kategori" << setw(15) << "Nominal" << endl;
+    for (int i = 0; i < currentIndex; ++i) {
+        // Pengecekan jika kategori tidak kosong dan deskripsi tidak kosong
+         if (!kategori[i].nama.empty() && !transaksi[i].deskripsi.empty()) {
+            // Outcome
+            time_t waktu = mktime(&transaksi[i].tanggal);  // Konversi struct tm ke time_t
+            tm* waktuTm = localtime(&waktu);
+            char buffer[20];
+            strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
+            if (transaksi[i].type != Income) {
+                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi << setw(15) << kategori[i].nama << setw(15) << transaksi[i].jumlah << endl;
+            } 
+        }  
+    }
+}
+
+void printTransIncome() {
+    cout << "\tINCOME\n";
+    cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi"  << setw(15) << "Nominal" << endl;
+    for (int i = 0; i < currentIndex; ++i) {
+        // Pengecekan jika kategori tidak kosong dan deskripsi tidak kosong
+        if (!transaksi[i].deskripsi.empty()) {
+            // Income
+            time_t waktu = mktime(&transaksi[i].tanggal);  // Konversi struct tm ke time_t
+            tm* waktuTm = localtime(&waktu);
+            char buffer[20];
+            strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
+            if (transaksi[i].type == Income) {
+                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi  << setw(15) << transaksi[i].jumlah << endl;
+            }
+        }
+    }
+}
+
+void printTheCurrentTrans() {
+    if (currentIndex > 0) {
+        cout << "Data Transaksi Terakhir:\n";
+        cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi" << setw(15) << "Kategori" << setw(15) << "Nominal" << setw(20) << "Dana" << endl;
+        
+        int i = currentIndex - 1;  // Mengambil data pada index terakhir
+        time_t waktu = mktime(&transaksi[i].tanggal);
+        tm* waktuTm = localtime(&waktu);
+        char buffer[20];
+        strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
+
+        if (!kategori[i].nama.empty() && !transaksi[i].deskripsi.empty()) {
+            // Outcome
+            if (transaksi[i].type != Income) {
+                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi << setw(15) << kategori[i].nama << setw(15) << transaksi[i].jumlah;
+                cout << setw(20) << cekSaldo() << endl;
+            }
+        } else {
+            // Income
+            if (transaksi[i].type == Income) {
+                cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi << setw(15) << transaksi[i].jumlah;
+                cout << setw(20) << cekSaldo() << endl;
+            }
+        }
+    } else {
+        cout << "Belum ada transaksi." << endl;
+    }
+}
+
+
 
 	void printKategoriPerStruct() {
     cout << setw(20) << "Nama Kategori" << setw(30) << "Nominal" << endl;
@@ -279,7 +313,36 @@ void printTransIncome() {
             }
    	     }
    	 }
-		}
+}
+
+// Tambahkan fungsi berikut ke dalam kelas TrackerTransaksi
+void pilihanKategoriPerInput(unsigned int &nominal, string &desk, char &ulang, string kategori) {
+    cout << "Silahkan Masukkan Nominal : ";
+    inputAngka(nominal, "Silahkan masukkan angka : ");
+       cout << "Silahkan masukkan Deskripsi : ";
+    cin.ignore();  // Membersihkan buffer
+    getline(cin, desk);
+
+    tambahTrans(Outcome, desk, nominal, kategori);
+    printTheCurrentTrans();
+
+    cout << "Ulang (y/n) : ";
+    inputChar(ulang, "ULANG (Y/N) : ");
+
+    if (ulang == 'y' || ulang == 'Y') {
+        // Melakukan rekursi untuk mengulang fungsi jika ulang adalah 'y' atau 'Y'
+        pilihanKategoriPerInput(nominal, desk, ulang, kategori);
+    } else if (ulang == 'n' || ulang == 'N') {
+        cout << "Back";
+    } else {
+        cout << "ASTAJIM";
+        getch();
+    }
+}
+
+
+
+
 
 	
 };
@@ -356,7 +419,7 @@ char akun(bool isCls = false) {
 } 
 //-----------------------------------------------------------------
 //fungsi sekali pakai, ingat!!!
-void printSaldoAwal(User user, unsigned int & saldo){
+void printSaldoAwal(User &user, unsigned int &saldo){
 	print(samadengan(intSpace));
 		printVariabel(intSpace,"SALDO UTAMA");
 	print(samadengan(intSpace));
@@ -393,17 +456,8 @@ void printSaldoAwal(User user, unsigned int & saldo){
 		
 }
 //----------------------------------------------------------------
-//-----------------------------------------------------------------------
-	
-	//------------------CHOOSE 1
-	void expense(User &user){
-		switch(akun()){
-			case '1' :
-				char pilih;
-				unsigned int nominal;
-				string desk;
-				system("cls");
-			print(samadengan(intSpace));
+void printKategori(){
+		print(samadengan(intSpace));
 			printVariabel(intSpace,"KATEGORI");
 			print(samadengan(intSpace));
 			printVariabel(intSpace,"Harian", "1. ");
@@ -411,31 +465,103 @@ void printSaldoAwal(User user, unsigned int & saldo){
 			printVariabel(intSpace,"Pendidikan", "3. ");
 			printVariabel(intSpace,"LifeStyle", "4. ");
 			print(garis(intSpace));
-			print("Pilih Kategori : ", false);
-			
-			inputChar( pilih ,"Pilih Kategori (1-4) : ");
-			  switch(pilih){
-			  	case '1' : 
-			  	
-				  print("Silahkan Masukkan Nominal : ", false);
-				  inputAngka(nominal, "Silahkan masukkan angka : ");
-				  print("Silahkan masukkan Deskripsi : ", false);
-				  cin>>desk;
-				  
-				   user.trackTunai.tambahTrans(Outcome, desk, nominal, "Harian");
-				   user.trackTunai.printTransOutcome();
-				   	print("Tekan Apa saja Untuk Merestart ...");
- 	 			   getch();
-				  break;
-			  }
-//			 user.trackTunai.tambahTrans(Outcome, )
-			break;
-		}
-	}
+}
+
+
+
+
+
+void expense(User &user) {
+    // AKUN CASH
+    char pilih;
+    char ulang;
+    unsigned int nominal;
+    string desk;
+
+    switch (akun()) {
+        // akun 1 == tunai
+        case '1' :
+        	system("cls");
+ 			 printKategori();
+            cout << "Pilih Kategori: ";
+            inputChar(pilih, "Pilih Kategori (1-4) : ");
+            
+            switch (pilih) {
+                case '1' :
+                    user.trackTunai.pilihanKategoriPerInput(nominal, desk, ulang, "Harian");
+                    break;
+                case '2' :
+                    user.trackTunai.pilihanKategoriPerInput(nominal, desk, ulang, "Sosial");
+                    break;
+                case '3' :
+                    user.trackTunai.pilihanKategoriPerInput(nominal, desk, ulang, "Pendidikan");
+                    break;
+                case '4' :
+                    user.trackTunai.pilihanKategoriPerInput(nominal, desk, ulang, "Lifestyle");
+                    break;
+                default :
+                    cout << "Error!";
+            }
+            break;
+        // emoney
+         case '2' :
+         	system("cls");
+  			printKategori();
+            cout << "Pilih Kategori: ";
+            inputChar(pilih, "Pilih Kategori (1-4) : ");
+            
+            switch (pilih) {
+                case '1' :
+                    user.trackEMoney.pilihanKategoriPerInput(nominal, desk, ulang, "Harian");
+                    break;
+                case '2' :
+                    user.trackEMoney.pilihanKategoriPerInput(nominal, desk, ulang, "Sosial");
+                    break;
+                case '3' :
+                    user.trackEMoney.pilihanKategoriPerInput(nominal, desk, ulang, "Pendidikan");
+                    break;
+                case '4' :
+                    user.trackEMoney.pilihanKategoriPerInput(nominal, desk, ulang, "Lifestyle");
+                    break;
+                default :
+                    cout << "Error!";
+            }
+            break;
+            
+               case '3' :
+         	system("cls");
+  			printKategori();
+            cout << "Pilih Kategori: ";
+            inputChar(pilih, "Pilih Kategori (1-4) : ");
+            
+            switch (pilih) {
+                case '1' :
+                    user.trackBank.pilihanKategoriPerInput(nominal, desk, ulang, "Harian");
+                    break;
+                case '2' :
+                    user.trackBank.pilihanKategoriPerInput(nominal, desk, ulang, "Sosial");
+                    break;
+                case '3' :
+                    user.trackBank.pilihanKategoriPerInput(nominal, desk, ulang, "Pendidikan");
+                    break;
+                case '4' :
+                    user.trackBank.pilihanKategoriPerInput(nominal, desk, ulang, "Lifestyle");
+                    break;
+                default :
+                    cout << "Error!";
+            }
+            break;
+        
+        default : cout<<"erorr!!";
+        
+    }
+}
+
 	
 	
 	//-------------------CHOOSE 2
 	void income(User &user){
+		
 	}
 	
 	//--------------------CHOOSE 3
@@ -448,8 +574,8 @@ void printSaldoAwal(User user, unsigned int & saldo){
 		printVariabel(intSpace,"ANALYTICAL");
 		print(samadengan(intSpace));
 		printVariabel(intSpace, "1. HISTORY");
-		printVariabel(intSpace, "2. INCOME");
-		printVariabel(intSpace, "3. EXPENSE");
+		printVariabel(intSpace, "2. PEMASUKAN");
+		printVariabel(intSpace, "3. PENGELUARAN");
 		printVariabel(intSpace, "0. KEMBALI");
 		print(garis(intSpace));
 		
@@ -463,10 +589,10 @@ void printMainMenu(User &user){
 	 print(samadengan(intSpace));
     printVariabel(intSpace, "MONEY TRACKER");
     print(samadengan(intSpace));
-   printVariabel(intSpace, "1. EXPENSE" );   
-   printVariabel(intSpace, "2. INCOME" );   
+   printVariabel(intSpace, "1. PENGELUARAN" );   
+   printVariabel(intSpace, "2. PEMASUKAN" );   
    printVariabel(intSpace, "3. TRANSFER" );   
-   printVariabel(intSpace, "4. ANALYTICAL" );   
+   printVariabel(intSpace, "4. ANALISIS" );   
    print(garis(intSpace));
    
    
@@ -487,6 +613,7 @@ void printMainMenu(User &user){
 		transfer(user);	
 		break;
 	case '4' : 
+	system("cls");
 		analitik(user);
 		break;
 	default :    
@@ -504,7 +631,8 @@ void printMainMenu(User &user){
 int main() {
 	unsigned int saldo;
 	User eril;
-//	    user.trackTunai.saldoAwal(1000000);
+	
+//	    eril.trackTunai.saldoAwal(6000);
 //	    user.trackEMoney.saldoAwal(1000);
 //	    user.trackBank.saldoAwal(1000);
 //		
@@ -527,11 +655,10 @@ int main() {
 //	    cout<<"\n\n\n";
 //	    user.trackTunai.printTransIncome();
    
-//    printSaldoAwal(eril,saldo);
-//    system("cls");
-//    printMainMenu(eril);
-expense(eril);
+    printSaldoAwal(eril,saldo);
+    system("cls");
+    printMainMenu(eril);
+
 
 	    return 0;
 }
-	
