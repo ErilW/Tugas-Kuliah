@@ -33,8 +33,7 @@ class TrackerTransaksi {
    Transaksi transaksi[MAX_TRANS];
    Kategori kategori[MAX_TRANS];
 
-   void tambahUangPerKategori(string nama /*nama kategori input user*/,
-                              unsigned long long jumllah) {
+   void tambahUangPerKategori(string nama, unsigned long long jumllah) {
       kategori[currentIndex].nama = nama;
       kategori[currentIndex].jumlahUtamaKategori += jumllah;
    }
@@ -1031,7 +1030,7 @@ atas:
 		goto atas;
 return 0;
    		
-   	}else{
+  }else{
    system("cls");
    unsigned long long saldo;
    User eril;
