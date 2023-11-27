@@ -10,45 +10,51 @@
 #define MAX_TRANS 150
 using namespace std;
 
+
+// menggunakan print kategori ke paling atas
 void printKategori(void);
 
+//tipe transaksi
 enum transactionType { Income, Outcome };
-
+//data transaksi
 struct Transaksi {
    transactionType type;
    tm tanggal;
    string deskripsi;
    unsigned long long jumlah;
 };
-
+//data kategori
 struct Kategori {
    string nama;
    unsigned long long jumlahUtamaKategori;
 };
-
+//pengolahan transaksi
 class TrackerTransaksi {
+	//data private yang akan diakses oleh methods public
   private:
    unsigned long long jumlahUang = 0;
    int currentIndex = 0;
+   //Jumlah trans = 100
    Transaksi transaksi[MAX_TRANS];
    Kategori kategori[MAX_TRANS];
-
+   
+   // fungsi menambahkan kategori dipakai tambah trans
    void tambahUangPerKategori(string nama, unsigned long long jumllah) {
       kategori[currentIndex].nama = nama;
       kategori[currentIndex].jumlahUtamaKategori += jumllah;
    }
-
+   
+   //mengupdate data dengan kategori yang sama
    unsigned long long updateDataPerKategori(string namaKategori) {
       unsigned long long totalUtamaPerKategori = 0;
 
-      int i;  // Declare i outside the loop
-
+      int i;
       for (i = 0; i < currentIndex; i++) {
          if (namaKategori == kategori[i].nama) {
             totalUtamaPerKategori += transaksi[i].jumlah;
          }
       }
-
+      //double check
       if (i > 0) {
          kategori[i - 1].jumlahUtamaKategori =
              totalUtamaPerKategori;  // Update the total in the kategori array
@@ -57,11 +63,27 @@ class TrackerTransaksi {
       return totalUtamaPerKategori;
    }
 
+
+   // fungsi nambah uang
+   void tambahUang(unsigned long long saldo) { jumlahUang += saldo; }
+
+   // fungsi kurang uang
+   void kurangUang(unsigned long long saldo) {
+      // check bahwa saldo yang ingin dikurang tidak akan lebih dari jumlahUtama dan jumlahuang
+      // tidak 0
+      if (jumlahUang != 0 && jumlahUang >= saldo) {
+         jumlahUang -= saldo;
+      }
+   }
+
+	//data yang bisa dipakai semua oleh pemakai class
   public:
+  	//kembalikan hasil penghitungan jumlah uang dalam param kategori
    unsigned long long jumlahKategoriPerArrayStruct(string& namaKategori) {
       return updateDataPerKategori(namaKategori);
    }
-
+   
+   //mengecek nama kategori dalam array string didalam data kategori, apakah ada atau tidaknya
   	bool checkKategoriOnStruct(int &index,string array[]){
  		for (int i = 0; i <= currentIndex; i ++){
  			if( array[index] == kategori[i].nama){
@@ -72,7 +94,7 @@ class TrackerTransaksi {
 		 return false;
 	 }
 
-   // Sebagai Saldo Awal data jumlahUatama
+   // Sebagai penambahan Saldo Awal data jumlahUatama
    unsigned long long saldoAwal(unsigned long long saldo) {
       tambahUang(saldo);
       return saldo;
@@ -84,22 +106,22 @@ class TrackerTransaksi {
   	 unsigned int a = jumlahUang;
  		  return a; 
 		   }
+		   
    // Tambah transaksi per index sesuai dengan current index dari private
-   void tambahTrans(transactionType type, const string deskripsi, unsigned long long jumlah,
-                    string namaKategori) {
+   void tambahTrans(transactionType type, const string deskripsi, unsigned long long jumlah, string namaKategori) {
+   	//format waktu
       time_t rawtime;
       time(&rawtime);
       tm* waktu = localtime(&rawtime);
-
+      //simpan data struct kedalam parameter
       transaksi[currentIndex].type = type;
       transaksi[currentIndex].tanggal = *waktu;
       transaksi[currentIndex].deskripsi = deskripsi;
       transaksi[currentIndex].jumlah = jumlah;
 
-      // Check if the category already exists
+      // Check jika kategori udah ada atau belum
       bool categoryExists = false;
       int existingCategoryIndex = -1;
-
       for (int i = 0; i < currentIndex; ++i) {
          if (kategori[i].nama == namaKategori) {
             categoryExists = true;
@@ -107,23 +129,26 @@ class TrackerTransaksi {
             break;
          }
       }
-
-      // If the category exists, use the existing category
+      
+      // jika ya, maka akan menggunakan kategori yang sudah ada
       if (categoryExists) {
-         // If enum is Income, add the amount to the main total
+         // jika pilihan transaksi nya adalh income
          if (type == Income) {
             tambahUang(jumlah);
             currentIndex++;
+            //jika bukan
          } else {
-            // Check if there's enough balance for the outcome
+            // check, apaka bisa jumlah uang utama mengurangi?
             if ((jumlahUang - jumlah) >= 0) {
-               // Subtract the amount
+               //kurang uang utama transaksi jika emang bisa dikurangi
                kurangUang(jumlah);
-               // Add the amount to the existing category
+               //menambah kan uang ke expense perkategori
                tambahUangPerKategori(namaKategori, jumlah);
                updateDataPerKategori(namaKategori);
+               //index berubah ke transaksi selanjutnya
                currentIndex++;
             } else {
+            	//jika gak cukup, cuman kasih tunjuk uang nya
                cout << "Saldo tidak cukup!" << endl;
                cekSaldo();
                return;
@@ -184,7 +209,8 @@ class TrackerTransaksi {
       }
       return totalOutcome;
    }
-
+   
+   //fungsi untuk menambah kan kategori baru
    void tambahKategori(const string& nama) {
       // Check if the category already exists
       bool categoryExists = false;
@@ -195,7 +221,6 @@ class TrackerTransaksi {
             break;
          }
       }
-
       // If the category doesn't exist, add a new category
       if (!categoryExists) {
          kategori[currentIndex].nama = nama;
@@ -205,22 +230,12 @@ class TrackerTransaksi {
       }
    }
 
-   // fungsi nambah uang
 
-   void tambahUang(unsigned long long saldo) { jumlahUang += saldo; }
-
-   // fungsi kurang uang
-   void kurangUang(unsigned long long saldo) {
-      // check bahwa saldo yang ingin dikurang tidak akan lebih dari jumlahUtama dan jumlahuang
-      // tidak 0
-      if (jumlahUang != 0 && jumlahUang >= saldo) {
-         jumlahUang -= saldo;
-      }
-   }
-   // fungsi yang menambahkan per kategori, dan hanya diakses oleh tambahTrans()
-
+   // fungsi transfer dari akun lain
    void transfer(TrackerTransaksi& to, unsigned long long amount, const string& description) {
+   	  // jika uang utama dalam akun tersebut kosong atau lebih kecil dari pengiriman
       if (cekSaldo() >= amount) {
+      	//tambah trans untuk mengeluarkan uang dari track ini ke track lainnya
          tambahTrans(Outcome, description, amount, "transfer");
          to.tambahTrans(Income, description, amount, "");
          cout << "Transfer successful!" << endl;
@@ -230,27 +245,9 @@ class TrackerTransaksi {
    }
 
    //-------------------------------PRINTING------------------------------------------
-   // print transaksi yang sudah pernah dilakukan
-   void printTransOutcome() {
-      cout << "\tOUTCOME\n";
-      cout << setw(20) << "Tanggal" << setw(30) << "Deskripsi" << setw(15) << "Kategori" << setw(15)
-           << "Nominal" << endl;
-      for (int i = 0; i < currentIndex; ++i) {
-         // Pengecekan jika kategori tidak kosong dan deskripsi tidak kosong
-         if (!kategori[i].nama.empty() && !transaksi[i].deskripsi.empty()) {
-            // Outcome
-            time_t waktu = mktime(&transaksi[i].tanggal);  // Konversi struct tm ke time_t
-            tm* waktuTm = localtime(&waktu);
-            char buffer[20];
-            strftime(buffer, sizeof(buffer), "%d, %H:%M:%S", waktuTm);
-            if (transaksi[i].type != Income) {
-               cout << setw(20) << buffer << setw(30) << transaksi[i].deskripsi << setw(15)
-                    << kategori[i].nama << setw(15) << transaksi[i].jumlah << endl;
-            }
-         }
-      }
-   }
+   
 
+	//print income keseluruhan
    void printTransIncome(string judul) {
       print(samadengan(intSpace));
 
@@ -272,7 +269,8 @@ class TrackerTransaksi {
          }
       }
    }
-
+   
+   //fungsi untuk mengeprint transaksi saat ini
    void printTheCurrentTrans() {
       if (currentIndex > 0) {
          print(samadengan(WIDTH));
@@ -309,29 +307,8 @@ class TrackerTransaksi {
    }
 
 
-   // Tambahkan fungsi berikut ke dalam kelas TrackerTransaksi
-   void pilihanKategoriPerInput(unsigned long long& nominal, string& desk, string kategori) {
-      cout << "Silahkan Masukkan Nominal : ";
-      inputAngka(nominal, "SILAHKAN MASUKKAN NOMINAL : ");
-      cout << "Silahkan masukkan Deskripsi : ";
-      cin.ignore();  // Membersihkan buffer
-      getline(cin, desk);
-      if(desk == ""){
-      	desk = "Kosong!";
-	  }
-      
-      if (jumlahUang <= nominal) {
-         cout << "Uang Tidak Mencukupi ...";
-         getch();
-      } else {
-         tambahTrans(Outcome, desk, nominal, kategori);
-      }
-      system("cls");
-      printTheCurrentTrans();
-      cout << "\n\nTekan apa saja untuk kembali ...";
-      getch();
-   }
-
+ 
+ //print keseluruhan transaksi
    void printTrans() {
       // Print header
       cout << setw(20) << "Tanggal" << setw(20) << "Deskripsi" << setw(15) << "Jenis" << setw(15)
@@ -355,9 +332,33 @@ class TrackerTransaksi {
          }
       }
    }
+   
+   
+   //----------FUNSI KHUSUS DIPAKAI DILUAR---------------------
+    
+   void pilihanKategoriPerInput(unsigned long long& nominal, string& desk, string kategori) {
+      cout << "Silahkan Masukkan Nominal : ";
+      inputAngka(nominal, "SILAHKAN MASUKKAN NOMINAL : ");
+      cout << "Silahkan masukkan Deskripsi : ";
+      cin.ignore();  // Membersihkan buffer
+      getline(cin, desk);
+      if(desk == ""){
+      	desk = "Kosong!";
+	  }
+      if (jumlahUang <= nominal) {
+         cout << "Uang Tidak Mencukupi ...";
+         getch();
+      } else {
+         tambahTrans(Outcome, desk, nominal, kategori);
+      }
+      system("cls");
+      printTheCurrentTrans();
+      cout << "\n\nTekan apa saja untuk kembali ...";
+      getch();
+   }
 };
 
-//---------------CLASS USER---------------//
+//--------------------------------------CLASS USER----------------------------------//
 
 class User {
   private:
@@ -370,15 +371,16 @@ class User {
    }
 
   public:
+  	//methode akun
    TrackerTransaksi trackTunai;
    TrackerTransaksi trackEMoney;
    TrackerTransaksi trackBank;
 
-   void transferUang(TrackerTransaksi& from, TrackerTransaksi& to, unsigned long long amount,
-                     const string& description) {
+   void transferUang(TrackerTransaksi& from, TrackerTransaksi& to, unsigned long long amount, const string& description) {
       from.transfer(to, amount, description);
    }
-
+   
+   //print keseluruhan transaksi dari setiap akun
    void printSemuaTrans() {
       cout << "Saldo Tunai: " << trackTunai.cekSaldo() << endl;
       cout << "Saldo EMoney: " << trackEMoney.cekSaldo() << endl;
@@ -392,20 +394,23 @@ class User {
       cout << "\nTransaksi Bank:\n\n";
       trackBank.printTrans();
    }
-
+   
+   //print keseluruhan transaksi income per track
    void printAllIncomeTrack() {
       trackTunai.printTransIncome("TUNAI");
       trackEMoney.printTransIncome("E-MONEY");
       trackBank.printTransIncome("BANK");
    }
 
-void printTabelAkunPerKat(string stringArray[]) {
-    // Set the column widths based on the maximum length of the content
-    int kategoriWidth = 20;
-    int tunaiWidth = 15;
-    int emoneyWidth = 15;
-    int bankWidth = 10;
-    int totalWidth = 15;
+ 	
+ 	
+//Print tabel outcome per kategori
+   void printTabelAkunPerKat(string stringArray[]) {
+    	int kategoriWidth = 20;
+		int tunaiWidth = 15;
+  		int emoneyWidth = 15;
+  		int bankWidth = 10;
+  		int totalWidth = 15;
 
     cout << "| " << setw(kategoriWidth) << "KATEGORI" << " | "
          << setw(tunaiWidth) << "TUNAI" << " | "
@@ -427,6 +432,9 @@ void printTabelAkunPerKat(string stringArray[]) {
 
 //----------------------DILUAR CLASS-----------------------------//
 
+
+
+//fungsi memilih jenis akun
 char akun(User &user, bool isCls = false, string pesan = "Pilih Metode Akun : ") {
    char pilihan;
    print(garis(intSpace));
@@ -454,19 +462,29 @@ char akun(User &user, bool isCls = false, string pesan = "Pilih Metode Akun : ")
 }
 
 //--------------------------------------------------------
+
+//fungsi menampilkan nama project
 void projectExpenseTracker() {
-	int intSpace = 50;
+	int intSpace = 53;
    print(samadengan(intSpace));
-   cout << "PROJECT EXPENSE TRACKER\n";
+   cout <<  "|   PROJECT    EXPENSE   TRACKER                    |\n";
    print(samadengan(intSpace));
-   cout<<  "NAMA KELOMPOK : SOLAR (1)\n";
+   cout<<   "|   NAMA KELOMPOK     :    SOLAR (1)                |\n";
    print(garis(intSpace));
-   cout<< " ERIL SANJAYA --> KETUA\n" ;
+   cout<<   "|   DOSEN             :    Pak Yodi                 |\n";
+   print(garis(intSpace));
+    cout << "|   1.  Eril Sanjaya         --> 2023131009         |\n";
+    cout << "|   2.  Lustini              --> 2023131001         |\n";
+    cout << "|   3.  James Lim            --> 2023131005         |\n";
+    cout << "|   4.  Muhammad Naufal      --> 2023131017         |\n";
+    cout << "|   5.  Peter Pangaribuan    --> 2023133001         |\n";
+    cout << "|   6.  Victor               --> 2023131013         |\n";
+    cout << "|   7.  Sidarta David Setia  --> 2023133005         |\n";
+
    print(garis(intSpace));
 //   printVariabel(intSpace, "--> KETUA");
    
-   loading();
-   system("cls");
+  
 }
 //-----------------------------------------------------------------
 // fungsi sekali pakai, ingat!!!
@@ -601,7 +619,7 @@ void expense(User& user) {
    }
 }
 
-//-------------------CHOOSE 2
+//-------------------CHOOSE 2---------
 void printIncomeInterface(string akun, unsigned long long saldoPerAkun, unsigned long long saldo = 0, string desk = "-") {
    print(samadengan(intSpace));
    printVariabel(intSpace, "INCOME");
@@ -671,13 +689,12 @@ void income(User& user) {
          akun(user,true, "Pilih Akun Pemasukan");
    }
 }
-//-----------------------------------
 
-//--------------------------
+//--------------------CHOOSE 3
 
 // mengupdate interface sebanyak tiga kali sesuai yang diinginkan
-void printTransferInterface(string fromAkun, unsigned long long jumlahSaldoFrom, string toAkun,
-                            unsigned long long jumlahSaldoTo, unsigned long long jumlahTrans,
+void printTransferInterface(string fromAkun, unsigned long long jumlahSaldoFrom, 
+							string toAkun, unsigned long long jumlahSaldoTo, unsigned long long jumlahTrans,
                             string desk = "-") {
    print(samadengan(intSpace));
    printVariabel(intSpace, "TRANSFER");
@@ -690,7 +707,6 @@ void printTransferInterface(string fromAkun, unsigned long long jumlahSaldoFrom,
    cout << "DESKRIPSI : " << desk << "\n";
    print(garis(intSpace));
 }
-//--------------------CHOOSE 3
 
 void transfer(User& user) {
    unsigned long long amount;
@@ -924,6 +940,7 @@ void printTampilanMainMenu() {
    printVariabel(intSpace, "2. PEMASUKAN");
    printVariabel(intSpace, "3. TRANSFER");
    printVariabel(intSpace, "4. ANALISIS");
+   printVariabel(intSpace, "5. KREDIT");
    printVariabel(intSpace, "0. EXIT");
    print(garis(intSpace));
 }
@@ -933,7 +950,7 @@ backToMenu:
    char pilih;
    printTampilanMainMenu();
    cout << "\nPilih : ";
-   inputChar(pilih, "Pilih (1-4) : ");
+   inputChar(pilih, "Pilih (1-5) : ");
 
    switch (pilih) {
       case '0':
@@ -941,7 +958,6 @@ backToMenu:
          loading();
          break;
       case '1':
-
          // OUTCOME
          expense(user);
          system("cls");
@@ -954,6 +970,7 @@ backToMenu:
          printMainMenu(user);
          break;
       case '3':
+      	//system transfer
          system("cls");
          transfer(user);
          system("cls");
@@ -962,6 +979,14 @@ backToMenu:
       case '4':
          system("cls");
          analitik(user);
+         system("cls");
+         printMainMenu(user);
+         break;
+      case '5':
+         system("cls");
+         projectExpenseTracker();
+         cout<<"\n\nTekan Apa saja untuk kembali ...";
+         getch();
          system("cls");
          printMainMenu(user);
          break;
@@ -976,7 +1001,9 @@ backToMenu:
 //------------------fungsi utama-------------------
 int main() {
 atas:
+	system("cls");
 	projectExpenseTracker();
+	loading();
    system("cls");
    cout << "Nama : ";
    string id;
@@ -1030,7 +1057,7 @@ atas:
 		goto atas;
 return 0;
    		
-  }else{
+   	}else{
    system("cls");
    unsigned long long saldo;
    User eril;
