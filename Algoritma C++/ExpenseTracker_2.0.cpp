@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "data (2).h"
+#include "data.h"
 #define MAX_TRANS 150
 using namespace std;
 
